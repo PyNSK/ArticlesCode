@@ -18,11 +18,18 @@
 
 
 <script>
+    var ajax = {};
+
+
+    var dynamic_data = [];
+
+    var json_data = {{ data|safe }};
+    json_data.forEach(function (element) {
+        dynamic_data.push([new Date(element[0]), element[1]]);
+    });
 
     var chart = new google.visualization.LineChart(
             document.getElementById('chart_div'));
-
-    var dynamic_data = [];
 
     google.load('visualization', '1', {packages: ['corechart']});
     google.setOnLoadCallback(drawChart);
@@ -75,22 +82,67 @@
 
     button.onclick = function () {
         var val = document.getElementById('dot_value').value;
-        console.log(val);
-        console.log(new Date());
-
         dynamic_data.push([new Date(), Number(val)]);
         drawChart();
+        ajax.get('/save', {value: val}, function () {
 
-        {##}
-        {#        // If the format option matches, change it to the new option,#}
-        {#        // if not, reset it to the original format.#}
-        {#        options.hAxis.format === 'M/d/yy' ?#}
-        {#                options.hAxis.format = 'MMM dd, yyyy' :#}
-        {#                options.hAxis.format = 'M/d/yy';#}
-        {##}
-        {#        chart.draw(data, options);#}
+        });
     };
 
+
+    ajax.x = function () {
+        if (typeof XMLHttpRequest !== 'undefined') {
+            return new XMLHttpRequest();
+        }
+        var versions = [
+            "MSXML2.XmlHttp.6.0",
+            "MSXML2.XmlHttp.5.0",
+            "MSXML2.XmlHttp.4.0",
+            "MSXML2.XmlHttp.3.0",
+            "MSXML2.XmlHttp.2.0",
+            "Microsoft.XmlHttp"
+        ];
+
+        var xhr;
+        for (var i = 0; i < versions.length; i++) {
+            try {
+                xhr = new ActiveXObject(versions[i]);
+                break;
+            } catch (e) {
+            }
+        }
+        return xhr;
+    };
+
+    ajax.send = function (url, callback, method, data, sync) {
+        var x = ajax.x();
+        x.open(method, url, sync);
+        x.onreadystatechange = function () {
+            if (x.readyState == 4) {
+                callback(x.responseText)
+            }
+        };
+        if (method == 'POST') {
+            x.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        }
+        x.send(data)
+    };
+
+    ajax.get = function (url, data, callback, sync) {
+        var query = [];
+        for (var key in data) {
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+        }
+        ajax.send(url + (query.length ? '?' + query.join('&') : ''), callback, 'GET', null, sync)
+    };
+
+    ajax.post = function (url, data, callback, sync) {
+        var query = [];
+        for (var key in data) {
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+        }
+        ajax.send(url, callback, 'POST', query.join('&'), sync)
+    };
 
 </script>
 
