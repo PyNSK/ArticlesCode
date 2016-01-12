@@ -3,8 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script type="text/javascript"
+            src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['corechart', 'timeline']}]}"></script>
 </head>
 <body>
+
+
+<div style="text-align: center;">
+    <input id="dot_value" type="number"/>
+    <button id="add_dot">Добавить значение на график</button>
+</div>
+<hr>
+<div id="chart_div"></div>
+
+
+<script>
+
+    var chart = new google.visualization.LineChart(
+            document.getElementById('chart_div'));
+
+    var dynamic_data = [];
+
+    google.load('visualization', '1', {packages: ['corechart']});
+    google.setOnLoadCallback(drawChart);
+
+    function genOptions() {
+        return {
+            height: 500,
+            legend: {position: 'none'},
+            enableInteractivity: false,
+            title: 'Статистика отжиманий от пола',
+            chartArea: {
+                width: '85%'
+            },
+            hAxis: {
+                title: 'Время',
+                gridlines: {
+                    count: -1,
+                    units: {
+                        days: {format: ['MMM dd']},
+                        hours: {format: ['HH:mm', 'ha']}
+                    }
+                },
+                minorGridlines: {
+                    units: {
+                        hours: {format: ['hh:mm:ss a', 'ha']},
+                        minutes: {format: ['HH:mm a Z', ':mm']}
+                    }
+                }
+            },
+            vAxis: {
+                title: 'Количество отжиманий',
+                minValue: 0
+            }
+        };
+    }
+
+    function genData(dynamic_data) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'X');
+        data.addColumn('number', 'Отжимания');
+        data.addRows(dynamic_data);
+        return data;
+    }
+
+    function drawChart() {
+        chart.draw(genData(dynamic_data), genOptions());
+    }
+
+    var button = document.getElementById('add_dot');
+
+    button.onclick = function () {
+        var val = document.getElementById('dot_value').value;
+        console.log(val);
+        console.log(new Date());
+
+        dynamic_data.push([new Date(), Number(val)]);
+        drawChart();
+
+        {##}
+        {#        // If the format option matches, change it to the new option,#}
+        {#        // if not, reset it to the original format.#}
+        {#        options.hAxis.format === 'M/d/yy' ?#}
+        {#                options.hAxis.format = 'MMM dd, yyyy' :#}
+        {#                options.hAxis.format = 'M/d/yy';#}
+        {##}
+        {#        chart.draw(data, options);#}
+    };
+
+
+</script>
 
 </body>
 </html>
